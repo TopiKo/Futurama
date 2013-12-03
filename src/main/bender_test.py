@@ -175,8 +175,8 @@ def run_bender(param_set, in_file):
         write_bender(E_b_surf, E_s_surf, E_b, E_s, ue, param_set)
 
 #run_tests()
-#run()
-plot()
+run()
+#plot()
 #main()  
 
 

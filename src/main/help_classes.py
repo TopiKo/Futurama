@@ -147,6 +147,12 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
     
     return consts, bounds
 
+def reduce_bounds(bounds):
+    
+    bounds[1] = (bounds[1][0], bounds[1][1]*9/10)
+    
+    return bounds
+
 def curve_Lphi(u, test = True):
     
     # Lphi = curve length along circumference with radius r
