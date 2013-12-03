@@ -112,12 +112,10 @@ def run_bender(param_set, in_file):
 
     system              =   param_set["system"]
     ir                  =   param_set["ir"]
-    #nr, nphi            =   param_set["nr"],    param_set["nphi"]
     rmin, rmax          =   param_set["rmin"],  param_set["rmax"]
-    #phimin, phi_period  =   param_set["phimin"],param_set["phiperiod"] 
     height              =   param_set["height"]
     moldy_opm           =   param_set["moldy_opm"]
-    consts              =   param_set["consts"]
+    #consts              =   param_set["consts"]
     
     print 'running system: ' + system + ', ir = ' + str(ir) 
     print 'height = ' + str(height)
@@ -165,9 +163,8 @@ def run_bender(param_set, in_file):
     elif moldy_opm:
         # -4.65130433   2.35636105   4.29354744  19.13012557
         try:
-            params      =   read_bender_output(in_file)[0]
-            consts      =   params[("consts")]
-            ue.set_const(consts)
+            params      =   read_bender_output(in_file)[0]   
+            ue.set_const(params[("consts")])
         except IOError:
             print 'got io error from trying to import constants for moldy opm!!'
             ue          =   optimize_c.optimize_consts()[2]

@@ -455,7 +455,7 @@ def generate_input():
                 if query_yes_no('make input from %i-%i' %(ir[0], ir[1]), 'yes'):
                     rmin, rmax      =   read_rad(ir)
                     try:
-                        heights         =   read_energies(ir, passivated = True, k_z = 6, optimized = True)[0]
+                        heights         =   read_energies(ir, passivated = True, k_z = 6, optimized = True)[0][1:]
                         n               =   max(1, int(len(heights)/15))
                     
                         for h in heights[::n]:
