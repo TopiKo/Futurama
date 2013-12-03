@@ -50,9 +50,16 @@ def get_z_set(rmat, hangle, consts, phiperiod):
 
     import scipy.optimize
     #print 'get_z consts = ' + str(consts) 
-    A       =   consts[1]
     w_num   =   consts[4]
+    
+    w_num_f =   0
+    if w_num != 0:
+        w_num_f = 1
+    
+    A       =   consts[1]*w_num_f
     z_set   =   np.zeros(rmat.shape)
+    
+    #print consts
     
     rs      =   strip(rmat[:,0], 'rs')
     Amps    =   np.zeros(len(rs))
@@ -71,15 +78,25 @@ def get_z_set(rmat, hangle, consts, phiperiod):
 
         #print r, A, beta, hangle
         
-        def F(phis):
+        if Amps[index] != 0:
             
-            return np.sqrt(hangle**2 + r**2)*phis*np.cos(beta) \
-                - Amps[index]*np.sin(phis/phiperiod*2*np.pi*w_num)*np.sin(beta) - r*phidils
+            def F(phis):
+                zero        =  np.sqrt(hangle**2 + r**2)*phis*np.cos(beta) \
+                            - Amps[index]*np.sin(phis/phiperiod*2*np.pi*w_num)*np.sin(beta) \
+                            - r*phidils
+                #print zero
+                #print phidils - phis
+                #print 
+                return zero
+            
+            nphi            =   scipy.optimize.broyden1(F, phis, f_tol=1e-6, \
+                                                maxiter = len(phis)*1000 + 1)
+            #print nphi, index, z_set
+            z_set[index,:]  =   np.sqrt(hangle**2 + r**2)*nphi*np.sin(beta) \
+                            + Amps[index]*np.sin(nphi/phiperiod*2*np.pi*w_num)*np.cos(beta)
         
-        nphi    =   scipy.optimize.broyden1(F, phis, f_tol=6e-7, maxiter = len(phis)*1000 + 1)
-        #print nphi, index, z_set
-        z_set[index,:]=   np.sqrt(hangle**2 + r**2)*nphi*np.sin(beta) \
-                        + Amps[index]*np.sin(nphi/phiperiod*2*np.pi*w_num)*np.cos(beta) 
+        else:
+            z_set[index,:]  = hangle*phis 
         
     return z_set
     

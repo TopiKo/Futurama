@@ -50,7 +50,7 @@ def plot():
                 if input_file[-3:] == 'txt':
                     if has_been_calculated(input_file_folder + input_file, 'read'):
                         print input_file_folder + input_file
-                        #plot_e_surfaces(input_file_folder + input_file, show = True)
+                        plot_e_surfaces(input_file_folder + input_file, show = True)
                         #ue              =   parse_u_from_file(input_file_folder +  input_file)
                         #params          =   read_bender_output(input_file_folder +  input_file)[0]
                         #ue.set_const(params[("consts")])
@@ -175,8 +175,8 @@ def run_bender(param_set, in_file):
         write_bender(E_b_surf, E_s_surf, E_b, E_s, ue, param_set)
 
 #run_tests()
-run()
-#plot()
+#run()
+plot()
 #main()  
 
 
