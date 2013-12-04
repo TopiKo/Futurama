@@ -123,8 +123,10 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
         #print pi/2
         A_max   =   np.tan(pi/2 - pi/2/7 - np.arctan(hangle/(rmin + x)))\
                     *phiperiod/(2*pi*n_w)*(rmax + x)
+        A_quess =   (hangle*2*np.pi)/50./n_w
     else:
         A_max   =   0.
+        A_quess =   0.
     
     A_max       =   min(A_max, 5)
     
@@ -135,7 +137,7 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
         
     if  opt == [2,3,1]:
 #        o_consts        =   [x, (hangle*2*np.pi)/340., middle - rmin, width] # 
-        consts          =   [2./3.*x, (hangle*2*np.pi)/240., middle, width, n_w] # 
+        consts          =   [2./3.*x, A_quess, middle, width, n_w] # 
  
         bounds          =   [(x*4./3., 0.01), (0., A_max), \
                              (0.0, width), (width - dw, width + dw)]

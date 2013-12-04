@@ -21,6 +21,7 @@ from optimize_consts import optimize
 from analyze.calculate import study_consts_proximity, \
             study_height_synopsis, study_total_synopsis
 from plots import plot_e_surfaces
+import gc
 
 pi                  =   np.pi
 
@@ -101,8 +102,9 @@ def run():
                         param_set   =   parse_input(input_file_folder + input_file)
                         #if query_yes_no("run this " + input_file, 'no'):
                         run_bender(param_set, input_file_folder + input_file)
-            
-    
+                        unreached = gc.collect()
+                        print 'in collect there was %i unreached objects' %unreached
+                        
     write_total_synopsis(nr, nphi, phiperiod, system, input_file_folder_consts)
     
     study_total_synopsis(nr, nphi, phiperiod, system)
