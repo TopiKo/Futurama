@@ -142,20 +142,9 @@ class optimize():
         if self.energies.u == None:
             self.energies.set_u(self.ue)
         
-        if not self.ue.moldy:
-            self.ue.set_moldy(True)  
+            
+        o_flat_umat     =   fmin_l_bfgs_b(energy, self.ue.flat_umat, bounds = self.ue.bounds, approx_grad = True)[0]
         
-        if self.optimizer == 'l_bfgs':
-            o_flat_umat     =   fmin_l_bfgs_b(energy, self.ue.flat_umat, bounds = self.ue.bounds, \
-                                                  approx_grad = True, epsilon = 1e-5)[0]
-        
-        elif self.optimizer == 'tnc':
-            o_flat_umat     =   fmin_tnc(energy, self.ue.flat_umat, bounds = self.ue.bounds, approx_grad = True)[0]
-        
-        else:
-            o_flat_umat     =   fmin(energy, self.ue.flat_umat)
-        
-
         E_b, E_s, E_b_surf, E_s_surf, normals =  \
                                     self.energies.calc_energies_moldy(o_flat_umat)
         

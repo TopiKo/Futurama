@@ -53,10 +53,10 @@ class deform_energies():
         E_s_surf, E_s           =   self.F_s()
         E_b_surf, E_b, normals  =   self.F_b()
         
-        if count % 1000 == 0 or count == 0: 
-            plot_all(self.u, E_s_surf, E_b_surf, normals, show = False, \
-                 save = True, path = \
-                 '/space/tohekorh/Spiral/iteration/iter=%i_' %count ) 
+        #if count % 1000 == 0 or count == 0: 
+        #    plot_all(self.u, E_s_surf, E_b_surf, normals, show = False, \
+        #         save = True, path = \
+        #         '/space/tohekorh/Spiral/iteration/iter=%i_' %count ) 
         
         return E_b, E_s, E_b_surf, E_s_surf, normals
         

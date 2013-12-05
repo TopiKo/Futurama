@@ -48,13 +48,16 @@ def select_option(system, phi_period, hangle):
 
 def get_sys_sets():
     
-    return [['spiral_w_wave_sqr', [20, 40],     pi/3],      \
-            ['spiral',            [20, 40],     pi/3],      \
-            ['spiral_w_wave_str', [20, 40],     pi/3],      \
-            ['spiral_w_wave_sqr', [20, 80],     2*pi/3],    \
-            ['spiral',            [20, 80],     2*pi/3],    \
-            ['spiral_w_wave_sqr', [20, 120],    4*pi/3],    \
-            ['spiral',            [20, 120],    4*pi/3]]
+    return [['spiral_w_wave_sqr', [20, 40],     pi/3,   'consts'],      \
+            ['spiral',            [20, 40],     pi/3,   'consts'],      \
+            ['spiral_w_wave_str', [20, 40],     pi/3,   'consts'],      \
+            ['spiral_w_wave_sqr', [20, 80],     2*pi/3, 'consts'],    \
+            ['spiral',            [20, 80],     2*pi/3, 'consts'],    \
+            ['spiral_w_wave_sqr', [20, 120],    4*pi/3, 'consts'],    \
+            ['spiral',            [20, 120],    4*pi/3, 'consts'],      \
+            ['spiral_w_wave_sqr', [20, 40],     pi/3,   'moldy'],      \
+            ['spiral',            [20, 40],     pi/3,   'moldy']]
+            
     
     
 def heaviside(rad, rlim):
@@ -137,7 +140,7 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
     if n_w != 0:
         A_max   =   np.tan(pi/2 - pi/2/7 - np.arctan(hangle/(rmin + x)))\
                     *phiperiod/(2*pi*n_w)*(rmax + x)
-        A_quess =   (hangle*2*np.pi)/100./n_w
+        A_quess =   (hangle*2*np.pi)/70./n_w
     else:
         A_max   =   0.
         A_quess =   0.

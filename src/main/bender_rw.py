@@ -131,21 +131,24 @@ def write_synopsis(in_file):
     
     data_dir=   dirname(dirname(dirname( \
                     parse_path(params, params[("moldy_opm")]))))
-        
+    
     for sub_folder in listdir(data_dir):
+        
         if sub_folder  != 'synopsis':
             
             param_dir   =   join(data_dir, sub_folder + '/opm_consts/')
             
-            with open(param_dir + 'params.txt', 'rb') as handle:
-                params = pickle.loads(handle.read())
+            try:
+                with open(param_dir + 'params.txt', 'rb') as handle:
+                    params = pickle.loads(handle.read())
+                    heights.append(params[("height")])
+                    E_bs.append(params[("E_b")])
+                    E_ss.append(params[("E_s")])
+                    consts.append(params[("consts")])
+            except IOError:
+                print 'did not find params from ' + param_dir
             
-            heights.append(params[("height")])
-            E_bs.append(params[("E_b")])
-            E_ss.append(params[("E_s")])
-            consts.append(params[("consts")])
-            
-    params_synopsis = {}
+    params_synopsis             =   {}
     
     params_synopsis["heights"]  =   heights
     params_synopsis["E_bs"]     =   E_bs
@@ -184,14 +187,19 @@ def read_synopsis(in_file):
 
     
             
-def read_bender_output(input_file):
+def read_bender_output(input_file, read_for_moldy = False):
     
     from surface import parse_surf
     
     params      =   parse_input(input_file)
-    folder      =   parse_path(params, params[("moldy_opm")])
     
-    print folder
+    if read_for_moldy:
+        folder  =   parse_path(params, False)
+    else:
+        folder  =   parse_path(params, params[("moldy_opm")])
+
+    
+    #print folder
     
     with open(folder + 'params.txt', 'rb') as handle:
         params = pickle.loads(handle.read())
@@ -410,7 +418,10 @@ def generate_input(system_set):
     system              =   system_set[0]
     phimin, phiperiod   =   0, system_set[2]
     [nr, nphi]          =   system_set[1]
-    moldy_opm           =   'false'
+    if system_set[3] == 'consts':
+        moldy_opm           =   'false'
+    elif system_set[3] == 'moldy':
+        moldy_opm           =   'True'
     
     irs                 =   [[1,6],[2,6],[4,9],[6,12],[6,17],\
                              [7,14],[8,12],[8,16],[8,18],[9,19],[11,20]] # these are set of unsuccesfull hotbit calculations
@@ -421,7 +432,7 @@ def generate_input(system_set):
             
             if ir in irs: 
             
-                if query_yes_no('make input from %i-%i' %(ir[0], ir[1]), 'yes'):
+                if query_yes_no('make input from %i-%i, moldy %s' %(ir[0], ir[1], moldy_opm), 'yes'):
                     rmin, rmax      =   read_rad(ir)
                     try:
                         heights         =   read_energies(ir, passivated = True, k_z = 6, optimized = True)[0][1:]
@@ -429,8 +440,8 @@ def generate_input(system_set):
                     
                         for h in heights[::n]:
                             
-                            folder = path + 'bender_input/calc/consts/%s/phiper=%.2f/nr-nphi=%i-%i/%i-%i/' \
-                            %(system, phiperiod, nr, nphi, ir[0], ir[1])
+                            folder = path + 'bender_input/calc/%s/%s/phiper=%.2f/nr-nphi=%i-%i/%i-%i/' \
+                            %(system_set[3], system, phiperiod, nr, nphi, ir[0], ir[1])
                             
                             if not exists(folder):
                                 makedirs(folder)

@@ -93,14 +93,14 @@ def run():
     for system_set in system_sets:
         
         system                          =   system_set[0] 
-        [nr, nphi], phiperiod           =   system_set[1:]
-        
-        print nr,nphi
+        [nr, nphi], phiperiod           =   system_set[1:3]
+        moldy                           =   system_set[3]
+        print nr,nphi, moldy
         
         from os import listdir
         gc.enable()
         
-        input_file_folder_consts        =   '/space/tohekorh/Spiral/bender_input/calc/consts/' \
+        input_file_folder_consts        =   '/space/tohekorh/Spiral/bender_input/calc/%s/' %moldy \
                                                + '%s/phiper=%.2f/nr-nphi=%i-%i/'  \
                                                 %(system, phiperiod, nr, nphi)
             #input_file_folder_moldy     =   '/space/tohekorh/Spiral/bender_input/calc/moldy/'
@@ -119,17 +119,17 @@ def run():
                 for input_file in listdir(input_file_folder):
                     if input_file[-3:] == 'txt':
                         if not has_been_calculated(input_file_folder + input_file, 'read'):
-                            try:
-                                param_set   =   parse_input(input_file_folder + input_file)
-                                #if query_yes_no('system = ' + system + " run this " + input_file, 'no'):
+                            param_set   =   parse_input(input_file_folder + input_file)
+                            try:   
+                            #if query_yes_no('system = %s, moldy = %s' %(system, moldy) + " run this " + input_file, 'no'):
                                 run_bender(param_set, input_file_folder + input_file)
                                 unreached = gc.collect()
                                 del gc.garbage[:]
                                 print 'in collect there was %i unreached objects' %unreached
-                                
+                        
                                 logfile.write(str(system_set) + ' \n')
                                 logfile.write(input_file + 'SUCCESS! \n\n')
-                                
+                        
                             except Exception as e:
                                 logfile.write(str(datetime.now()) + ' \n') 
                                 logfile.write(str(e) + ' \n')
@@ -157,9 +157,13 @@ def run_bender(param_set, in_file):
     print 'rmin, rmax = %.2f, %.2f' %(rmin, rmax)
     
     ue                  =   parse_u_from_file(in_file)
-    optimize_c          =   optimize(ue, 'l_bfgs')
-
+    
+    print moldy_opm
+    
     if not moldy_opm:
+    
+        optimize_c          =   optimize(ue, 'l_bfgs')
+    
         
         [E_b_surf, E_s_surf], [E_b, E_s], ue, normals   \
                         =   optimize_c.optimize_consts()
@@ -172,24 +176,27 @@ def run_bender(param_set, in_file):
         write_synopsis(in_file)
         
         if system != 'spiral':
+            study_height_synopsis(in_file)
             try:
                 study_consts_proximity(in_file)
             except ValueError:
                 print 'voi hoh'
         
-            study_height_synopsis(in_file)
-        
         has_been_calculated(in_file, 'write')
-    
+        
     elif moldy_opm:
         
         try:
-            params      =   read_bender_output(in_file)[0]   
+            params      =   read_bender_output(in_file, read_for_moldy = True)[0]   
             ue.set_const(params[("consts")])
+            ue.set_moldy(True)  
+        
         except IOError:
             print 'got io error from trying to import constants for moldy opm!!'
             ue          =   optimize_c.optimize_consts()[2]
-            
+        
+        optimize_c      =   optimize(ue, 'l_bfgs')
+        
         [E_s_surf, E_b_surf], [E_b, E_s], ue    \
                     =   optimize_c.optimize_moldy()[:4]
 

@@ -24,6 +24,7 @@ class u():
         self.phi_period                 =   phi_period
         self.system                     =   system
         self.rps                        =   None
+        self.moldy                      =   moldy
         self.set_ainit_surf(asurf)
         
         #if consts != []:
@@ -587,12 +588,12 @@ def parse_u_from_file(in_file):
     rmin, rmax          =   param_set["rmin"],  param_set["rmax"]
     phimin, phi_period  =   param_set["phimin"],param_set["phiperiod"] 
     height              =   param_set["height"]
-    moldy_opm           =   param_set["moldy_opm"]
+    #moldy_opm           =   param_set["moldy_opm"]
     
     hangle              =   height / 2 / pi   
     asurf               =   surf(rmin, rmax, nr, phimin, phi_period, nphi)
     ue                  =   u(hangle, phi_period, asurf.get_all_surf(), \
-                              system = system, moldy = moldy_opm)
+                              system = system)
     
     return ue       
    

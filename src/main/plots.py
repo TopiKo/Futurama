@@ -194,7 +194,7 @@ def plot_energies(ir, rmin, rmax, heights, E_bs, E_ss, heights_hb, energies_hb, 
     
     plt.legend(loc = 2)
     
-    print e_tot
+    #print e_tot
     
     if len(heights) == len(heights_hb):
         ax2 = ax1.twinx()
