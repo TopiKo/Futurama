@@ -4,14 +4,11 @@ Created on Oct 17, 2013
 @author: tohekorh
 '''
 
-from help_classes import  valminmax, reduce_bounds, get_quess #rs, phis,
-#from strain import u
-#from tests import test_prime_maps
-#from surface import surf #, e_surf
+from help_classes import  valminmax, reduce_bounds, get_quess
 from datetime import datetime
-#from plots import plot_all
-import numpy as np
 from deform_energies import deform_energies
+
+import numpy as np
 
 class optimize():
     
@@ -22,17 +19,14 @@ class optimize():
         [self.phimin, self.phimax]  =   valminmax(ue.phys_surf)
         self.nr, self.nphi          =   ue.phys_surf.shape
         self.H                      =   self.hangle*2*np.pi
-        #self.energies               =   energies
         self.energies               =   deform_energies()
         self.optimizer              =   optimizer
         self.ue                     =   ue
         
         
     def optimize_consts(self):
-
-        
     
-        from scipy.optimize import fmin_l_bfgs_b  # fmin, fmin_tnc,  bfgs, lbfgs optimointiin
+        from scipy.optimize import fmin_l_bfgs_b #,  fmin_tnc #,  bfgs, lbfgs optimointiin
         print 'optimizing.. consts'
         
         def energy(consts):
@@ -48,56 +42,84 @@ class optimize():
             return E_s + E_b, grad
         
         self.energies.set_u(self.ue)
-                
-        i           =   0
-        E_wave      =   [0, -1]
-        data_arr    =   []
-        out         =   False
         
-        while i < 2 or not out:
-            print 'num of waves = ' + str(i)
+        if self.ue.system != 'spiral':
+                
+            i           =   0
+            E_wave      =   [0, -1]
+            data_arr    =   []
+            out         =   False
             
-            o_consts, bounds    =   get_quess(self.opt, self.ue.ext_surf, \
-                                              self.hangle, self.phimax- self.phimin, i) 
+            while i < 2 or not out:
+                print 'num of waves = ' + str(i)
+                
+                o_consts_set, bounds=   get_quess(self.opt, self.ue.ext_surf, \
+                                                  self.hangle, self.phimax- self.phimin, i) 
+                
+                E_min               =   1e8
+                for consts in o_consts_set:
+                    
+                    print 'Amplitude, A = %.2f, bounds A = ' %consts[1] + str(bounds[1])
+                    self.ue.set_const(consts)
+                    
+                    converged           =   False
+                    while not converged:
+                        try:
+                            ol_consts, E=   fmin_l_bfgs_b(energy, consts[:-1], \
+                                                          bounds = bounds)[:2]
+                            
+                            converged   =   True
+                        except ValueError:
+                            bounds      =   reduce_bounds(bounds)
+                
+                    if E < E_min:
+                        E_min           =   E
+                        min_consts      =   ol_consts    
+                        
+                        
+                o_consts            =   np.append(min_consts, [i])
+                
+                E_b, E_s, E_b_surf, E_s_surf, normals \
+                                    =   self.energies.calc_energies(o_consts)
+                
+                if i in [0, 1]:
+                    E_wave[i]       =   E_b + E_s 
+                    if i == 0:
+                        data_arr.append([E_b, E_s, E_b_surf, E_s_surf, normals, o_consts])
+                else:
+                    E_wave.append(E_b + E_s)
+    
+                if 0 < i:
+                    if E_wave[i] < E_wave[i - 1] and 1e-3 < o_consts[1]:
+                        data_arr.append([E_b, E_s, E_b_surf, E_s_surf, normals, o_consts])
+                    else:
+                        out         =   True
+                        data        =   data_arr[-1][:5]
+                        set_consts  =   data_arr[-1][5] 
+                i                  +=   1
+                    
+            #print 'set_consts' + str(set_consts)
+    
+            self.ue.set_const(set_consts)
+    
+            E_b, E_s, E_b_surf, E_s_surf, normals  = data
+            
+            return [E_b_surf, E_s_surf], [E_b, E_s], self.ue, normals
+        
+        elif self.ue.system == 'spiral':
+            
+            quess_consts, bounds=   get_quess(self.opt, self.ue.ext_surf, \
+                                              self.hangle, self.phimax- self.phimin, 0) 
+                
+            o_consts, E=   fmin_l_bfgs_b(energy, quess_consts, \
+                                              bounds = bounds)[:2]
+                
+            E_b, E_s, E_b_surf, E_s_surf, normals \
+                               =   self.energies.calc_energies(o_consts)
+                
             self.ue.set_const(o_consts)
             
-            converged           =   False
-            while not converged:
-                try:
-                    o_consts    =   fmin_l_bfgs_b(energy, o_consts[:-1], \
-                                                  bounds = bounds)[0]
-                    converged   =   True
-                except ValueError:
-                    bounds      =   reduce_bounds(bounds)
-                    
-                    
-            o_consts            =   np.append(o_consts, [i])
-            
-            E_b, E_s, E_b_surf, E_s_surf, normals \
-                                =   self.energies.calc_energies(o_consts)
-            
-            if i in [0, 1]:
-                E_wave[i]       =   E_b + E_s 
-                if i == 0:
-                    data_arr.append([E_b, E_s, E_b_surf, E_s_surf, normals, o_consts])
-            else:
-                E_wave.append(E_b + E_s)
-
-            if 0 < i:
-                if E_wave[i] < E_wave[i - 1] and 1e-3 < o_consts[1]:
-                    data_arr.append([E_b, E_s, E_b_surf, E_s_surf, normals, o_consts])
-                else:
-                    out         =   True
-                    data        =   data_arr[-1][:5]
-                    set_consts  =   data_arr[-1][5] 
-            i                  +=   1
-                
-        #print 'set_consts' + str(set_consts)
-        self.ue.set_const(set_consts)
-        E_b, E_s, E_b_surf, E_s_surf, normals  = data
-        
-        return [E_b_surf, E_s_surf], [E_b, E_s], self.ue, normals
-    
+            return [E_b_surf, E_s_surf], [E_b, E_s], self.ue, normals
     
     
     def optimize_moldy(self):
@@ -116,8 +138,6 @@ class optimize():
             
             self.count     +=   1
             return E_s + E_b
-        
-        
         
         if self.energies.u == None:
             self.energies.set_u(self.ue)

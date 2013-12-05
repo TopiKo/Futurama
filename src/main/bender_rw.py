@@ -12,7 +12,7 @@ import pickle
 #from classical import help_classes
 from help_classes import select_option
 from shutil import copy2
-from main.help_classes import query_yes_no
+from main.help_classes import query_yes_no, get_sys_sets
 
     
 path = '/space/tohekorh/Spiral/'
@@ -190,6 +190,8 @@ def read_bender_output(input_file):
     
     params      =   parse_input(input_file)
     folder      =   parse_path(params, params[("moldy_opm")])
+    
+    print folder
     
     with open(folder + 'params.txt', 'rb') as handle:
         params = pickle.loads(handle.read())
@@ -402,55 +404,22 @@ def read_rad(ir):
         print e
     
     return rad[0], rad[1]
-        
     
-    '''   
-    path_r                  =   path + 'opm_structures/H-passivation/radiuses.data' 
+def generate_input(system_set):
     
-    file_r                  =   open(path_r, 'r')
-    nextline                =   file_r.readline()
-    
-    while nextline != '':
-        data                =   nextline.split(' ')
-        if nextline[0] != '#':
-            irmin, irmax    =   float(data[0]), float(data[1])
-            rmin, rmax      =   float(data[2]), float(data[3])
-            #drmin, drmax    =   float(data[4]), float(data[5])   
-            if irmin == r[0] and irmax == r[1]:
-                file_r.close()
-                return rmin, rmax
-        
-        
-        nextline            =   file_r.readline()
-        
-    file_r.close()
-    
-    from calculate.radius import calc_rad
-    
-    rad, delr               =   calc_rad(r, 0., passivated = True, k_z = 6, opm = True)
-    file_r                  =   open(path_r, 'a')
-    file_r.write(str(r[0]) + ' ' + str(r[1]) + ' ' + str(rad[0]) + ' ' \
-                 + str(rad[1]) + ' ' + str(delr[0]) + ' ' + str(delr[1]) + ' \n' )
-    
-    file_r.close()
-    
-    return rad[0], rad[1]        
-    '''
-
-def generate_input():
-    
-    system              =   'spiral_w_wave'
-    phimin, phiperiod   =   0, np.pi/3
-    nr, nphi            =   20, 40
+    system              =   system_set[0]
+    phimin, phiperiod   =   0, system_set[2]
+    [nr, nphi]          =   system_set[1]
     moldy_opm           =   'false'
     
-    bad_irs             =   [[3,7]] # these are set of unsuccesfull hotbit calculations
+    irs                 =   [[1,6],[2,6],[4,9],[6,12],[6,17],\
+                             [7,14],[8,12],[8,16],[8,18],[9,19],[11,20]] # these are set of unsuccesfull hotbit calculations
     
     for input_file in listdir(path + 'opm_structures/H-passivation/'):
         if '-' in input_file:
             ir          =   [int(input_file.split('-')[0]), int(input_file.split('-')[1]) ]
             
-            if not ir[0] == bad_irs[0] and not ir[1] == bad_irs[1]: 
+            if ir in irs: 
             
                 if query_yes_no('make input from %i-%i' %(ir[0], ir[1]), 'yes'):
                     rmin, rmax      =   read_rad(ir)
@@ -531,14 +500,7 @@ def read_energies(r, passivated = True, k_z = 6, optimized = True):
         lengths[i]  = lengths_r[i]
         streches[i] = streches_r[i]
         
-    #try:
-    #    atoms = ase_read(path + 'calc/data/%i-%i%s.traj' %(r[0], r[1], H) )
-    #    structures.append(atoms)
-        
-    #except:
-    #    assert('could not read atoms: %i-%i%s.traj' %(r[0], r[1], H) )
-    
-    return lengths, energies, streches #, structures
+    return lengths, energies, streches
 
 def read_h_consts(ir, opt): 
     
@@ -614,7 +576,8 @@ def read_umat(ir, opt, H):
     
     return umat   
     
-
-#generate_input()     
+#system_sets     = get_sys_sets()
+#for system_set in system_sets:
+#    generate_input(system_set)     
     
     

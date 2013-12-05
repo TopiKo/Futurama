@@ -19,7 +19,7 @@ class deform_energies():
  
     def calc_energies(self, consts = []):
         
-        if consts != []:
+        if len(consts) != 0:
             self.u.set_const(consts)
         
         E_s_surf, E_s               =   self.F_s()
@@ -27,7 +27,7 @@ class deform_energies():
             
         return E_b, E_s, E_b_surf, E_s_surf, normals 
     
-    def calc_grad(self, consts, E_b, E_s):
+    def calc_grad(self, consts, E_b, E_s, acc = 1e-8):
         
         grad                        =   np.zeros(len(consts))
         
@@ -35,14 +35,14 @@ class deform_energies():
             new_consts  = np.zeros(len(consts))
             for ic, c in enumerate(consts):
                 if ic == index:
-                    new_consts[ic]   =  c + self.delg[ic]
+                    new_consts[ic]   =  c + acc #self.delg[ic]
                 else:
                     new_consts[ic]   =  c
             return new_consts 
         
         for i in range(len(grad)):
             self.u.set_const(add_del(i))
-            grad[i]     =   (self.F_s()[1] + self.F_b()[1] - E_b - E_s) / self.delg[i]
+            grad[i]     =   (self.F_s()[1] + self.F_b()[1] - E_b - E_s) / acc #self.delg[i]
             
         return grad 
         

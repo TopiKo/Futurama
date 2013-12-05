@@ -16,20 +16,22 @@ from os import makedirs
 from main.plots import plot_consts_proxm, plot_energies, plot_amplitude, plot_relations
 
 pi  =   np.pi
-acc =   3
+
 
 def study_height_synopsis(in_file):
     
     #in_file = '/space/tohekorh/Spiral/bender_input/calc/consts/in_8-16_H=73.0.txt'
     
-    ir                        =   parse_input(in_file)[("ir")]
+    params                    =   parse_input(in_file)
+    ir                        =   params[("ir")]
+    rmin,rmax                 =   params[("rmin")],params[("rmax")]
     data_array, syn_dir       =   read_synopsis(in_file) # heights, E_bs, E_ss, consts
     heights_hb, energies_hb   =   read_energies(ir)[:2]
     
-    plot_energies(ir, data_array[("heights")], data_array[("E_bs")], data_array[("E_ss")], \
+    plot_energies(ir, rmin, rmax, data_array[("heights")], data_array[("E_bs")], data_array[("E_ss")], \
                    heights_hb, energies_hb, syn_dir)
     
-    plot_amplitude(ir, data_array[("heights")], data_array[("consts")], syn_dir)
+    plot_amplitude(ir, rmin, rmax, data_array[("heights")], data_array[("consts")], syn_dir)
 
 def study_total_synopsis(nr, nphi, phiperiod, system):
     
@@ -51,13 +53,13 @@ def study_total_synopsis(nr, nphi, phiperiod, system):
         amplitudes.append(amplitude/rmax)
         n_waves.append(syn_params[(params)][("consts")][4])
         
-    print amplitudes
-    print height_rels
+    #print amplitudes
+    #print height_rels
     
     plot_relations(rad_rels, height_rels, amplitudes, n_waves, folder)
         
     
-def study_consts_proximity(in_file):
+def study_consts_proximity(in_file, acc = 3):
     
     print 'studying consts proximity..'
     
@@ -65,6 +67,8 @@ def study_consts_proximity(in_file):
         params, asurf =   read_bender_output(in_file)[:2] # + 'params.txt')
     except IOError as e:
         print 'there, is no file for this input... got ' + e 
+    
+    #print params[("consts")]
                 
     phi_period  =   params[("phiperiod")]
     hangle      =   params[("height")] / 2 / pi
@@ -73,8 +77,8 @@ def study_consts_proximity(in_file):
     ue          =   u(hangle, phi_period, asurf, system = system, consts = params[("consts")])
     energies    =   deform_energies(ue)
     
-    delx        =   abs(params[("consts")][0]) / 12.
-    delA        =   abs(params[("consts")][1]) / 3.
+    delx        =   abs(params[("consts")][0]) / 10.
+    delA        =   abs(params[("consts")][1]) / 2.
     x, A        =   params[("consts")][:2]
     
     

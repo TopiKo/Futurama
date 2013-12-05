@@ -9,7 +9,7 @@ from help_classes import heaviside, curve_Lr, curve_Lphi, \
          select_option, get_z_set
 from surface import transform_to_cart
 from tests import test_prime_maps
-from plots import plot_surf
+#from plots import plot_surf
 #from stress_test.tests import path_integral_r
 pi = np.pi
 
@@ -53,10 +53,11 @@ class u():
             self.consts                 =   consts
         
         
-        if self.system == 'spiral_w_wave' and self.rps == None:
+        if self.system in ['spiral_w_wave_sqr', 'spiral_w_wave_str'] \
+                     and self.rps == None:
             self.initialize_prime_maps()
         
-        if self.system == 'spiral_w_wave':
+        if self.system in ['spiral_w_wave_sqr', 'spiral_w_wave_str']:
             
             self.u()
             self.du()
@@ -225,8 +226,8 @@ class u():
         
         r_mat           =   self.ext_surf
         
-        if self.system == 'spiral_w_wave':
-            z_set       =   get_z_set(r_mat, self.hangle, self.consts, self.phi_period)
+        if self.system in ['spiral_w_wave_sqr', 'spiral_w_wave_str']:
+            z_set       =   get_z_set(self.system, r_mat, self.hangle, self.consts, self.phi_period)
         
         
         #print z_set
@@ -588,10 +589,10 @@ def parse_u_from_file(in_file):
     height              =   param_set["height"]
     moldy_opm           =   param_set["moldy_opm"]
     
-    hangle          =   height / 2 / pi   
-    asurf           =   surf(rmin, rmax, nr, phimin, phi_period, nphi)
-    ue              =   u(hangle, phi_period, asurf.get_all_surf(), \
-                          system = system, moldy = moldy_opm)
+    hangle              =   height / 2 / pi   
+    asurf               =   surf(rmin, rmax, nr, phimin, phi_period, nphi)
+    ue                  =   u(hangle, phi_period, asurf.get_all_surf(), \
+                              system = system, moldy = moldy_opm)
     
     return ue       
    

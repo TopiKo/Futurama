@@ -171,7 +171,7 @@ def plot_surf(u):
     plt.show()
     plt.clf()
     
-def plot_energies(ir, heights, E_bs, E_ss, heights_hb, energies_hb, save_dir):
+def plot_energies(ir, rmin, rmax, heights, E_bs, E_ss, heights_hb, energies_hb, save_dir):
 
     
     ax1 = plt.subplots()[1]
@@ -189,10 +189,12 @@ def plot_energies(ir, heights, E_bs, E_ss, heights_hb, energies_hb, save_dir):
     
     ax1.set_xlabel('Height')
     ax1.set_ylabel('Total deform energy in eV')
-    ax1.set_title('Deformation energy of spiral r = ' + str(ir))
+    ax1.set_title('Deformation energy of spiral ir = ' + str(ir) \
+                  + ', \n rmin, rmax = %.2f, %.2f' %(rmin, rmax))
     
-    plt.legend()
+    plt.legend(loc = 2)
     
+    print e_tot
     
     if len(heights) == len(heights_hb):
         ax2 = ax1.twinx()
@@ -231,7 +233,7 @@ def plot_relations(rad_rels, height_rels, amplitudes, n_waves, folder):
     
     plt.savefig(folder + 'amplitudes.png')
     
-def plot_amplitude(ir, heights, consts, save_dir):
+def plot_amplitude(ir, rmin, rmax, heights, consts, save_dir):
 
     
     ax1     =   plt.subplots()[1]
@@ -259,7 +261,8 @@ def plot_amplitude(ir, heights, consts, save_dir):
     ax1.set_ylabel('Amplitude angstroms')
     ax2.set_ylabel('Number of waves in u cell')
     
-    ax1.set_title('Amps and n_waves')
+    ax1.set_title('Amps and n_waves ir = ' + str(ir) \
+                  + ', rmin, rmax = %.2f, %.2f' %(rmin,rmax))
         
     plt.legend(loc = 2)
         

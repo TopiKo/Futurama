@@ -27,7 +27,12 @@ def select_option(system, phi_period, hangle):
         sym_op[0]   =   'roto_trans'
         sym_op[1]   =   phi_period*hangle 
 
-    elif system == 'spiral_w_wave':    
+    elif system == 'spiral_w_wave_sqr':    
+        opt     =   [2,3,1]
+        sym_op[0]   =   'roto_trans'
+        sym_op[1]   =   phi_period*hangle 
+
+    elif system == 'spiral_w_wave_str':    
         opt     =   [2,3,1]
         sym_op[0]   =   'roto_trans'
         sym_op[1]   =   phi_period*hangle 
@@ -36,8 +41,21 @@ def select_option(system, phi_period, hangle):
         opt     =   [0,0,3]
         sym_op[0]   =   'roto_trans'
         sym_op[1]   =   phi_period*hangle 
+    else:
+        raise IOError
     
     return opt, sym_op    
+
+def get_sys_sets():
+    
+    return [['spiral_w_wave_sqr', [20, 40],     pi/3],      \
+            ['spiral',            [20, 40],     pi/3],      \
+            ['spiral_w_wave_str', [20, 40],     pi/3],      \
+            ['spiral_w_wave_sqr', [20, 80],     2*pi/3],    \
+            ['spiral',            [20, 80],     2*pi/3],    \
+            ['spiral_w_wave_sqr', [20, 120],    4*pi/3],    \
+            ['spiral',            [20, 120],    4*pi/3]]
+    
     
 def heaviside(rad, rlim):
     
@@ -46,7 +64,7 @@ def heaviside(rad, rlim):
     else:
         return 1
 
-def get_z_set(rmat, hangle, consts, phiperiod):
+def get_z_set(system, rmat, hangle, consts, phiperiod):
 
     import scipy.optimize
     #print 'get_z consts = ' + str(consts) 
@@ -63,20 +81,22 @@ def get_z_set(rmat, hangle, consts, phiperiod):
     
     rs      =   strip(rmat[:,0], 'rs')
     Amps    =   np.zeros(len(rs))
-    c_start =   consts[2] + rs[0] 
     
     for i, r in enumerate(rs):
-        Amps[i] = heaviside(r, c_start)*((r - c_start)/ \
+        if system == 'spiral_w_wave_sqr':
+            c_start =   consts[2] + rs[0] 
+            Amps[i] =   heaviside(r, c_start)*((r - c_start)/ \
                                         (rs[-1] - c_start))**2*A
+        elif system == 'spiral_w_wave_str':
+            Amps[i] =   A*(r - rs[0])/(rs[-1] - rs[0]) 
     
+        
     for index, phis_vec in enumerate(rmat[:,]):
         
         phis    = strip(phis_vec, 'phis')
         r       = phis_vec[0][0]           
         phidils = phis
         beta    = np.arctan(hangle/r)
-
-        #print r, A, beta, hangle
         
         if Amps[index] != 0:
             
@@ -84,14 +104,11 @@ def get_z_set(rmat, hangle, consts, phiperiod):
                 zero        =  np.sqrt(hangle**2 + r**2)*phis*np.cos(beta) \
                             - Amps[index]*np.sin(phis/phiperiod*2*np.pi*w_num)*np.sin(beta) \
                             - r*phidils
-                #print zero
-                #print phidils - phis
-                #print 
                 return zero
             
             nphi            =   scipy.optimize.broyden1(F, phis, f_tol=1e-6, \
                                                 maxiter = len(phis)*1000 + 1)
-            #print nphi, index, z_set
+            
             z_set[index,:]  =   np.sqrt(hangle**2 + r**2)*nphi*np.sin(beta) \
                             + Amps[index]*np.sin(nphi/phiperiod*2*np.pi*w_num)*np.cos(beta)
         
@@ -116,14 +133,11 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
     width               =   rmax - rmin
     dw                  =   width/30
     x                   =   np.sqrt(rmin**2 - hangle**2) - rmin
-#    middle              =   rmin + width / 2 + x
+
     if n_w != 0:
-        #print np.arctan(hangle/(rmin + x))
-        #print np.arctan(3/phiperiod*2*pi)
-        #print pi/2
         A_max   =   np.tan(pi/2 - pi/2/7 - np.arctan(hangle/(rmin + x)))\
                     *phiperiod/(2*pi*n_w)*(rmax + x)
-        A_quess =   (hangle*2*np.pi)/50./n_w
+        A_quess =   (hangle*2*np.pi)/100./n_w
     else:
         A_max   =   0.
         A_quess =   0.
@@ -131,21 +145,25 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
     A_max       =   min(A_max, 5)
     
     if x != 0:
-        middle              =   -hangle**2/(2*x) - rmin - x/2
+        middle          =   -hangle**2/(2*x) - rmin - x/2
     else:
-        middle              =   0
+        middle          =   0
         
     if  opt == [2,3,1]:
-#        o_consts        =   [x, (hangle*2*np.pi)/340., middle - rmin, width] # 
-        consts          =   [2./3.*x, A_quess, middle, width, n_w] # 
- 
-        bounds          =   [(x*4./3., 0.01), (0., A_max), \
-                             (0.0, width), (width - dw, width + dw)]
+        if n_w == 0:
+            consts      =   [[x, A_quess, middle, width, n_w]]
+        else:   
+            consts      =   [[x, A_quess*2, middle, width, n_w]] #, \
+            #                [x, A_quess,   middle, width, n_w], \
+            #                [x, A_quess/2,     middle, width, n_w], \
+            #                [x, A_quess/20,   middle, width, n_w]]  
+        
+        bounds          =   [(x*4./3., 0.1), (0., A_max), \
+                             (-rmin/4, width), (width - dw, width + dw)]
         
     elif opt == [1,0,0]:
-        consts        =   [x]
+        consts          =   [x]
         bounds          =   [(-rmin, 0)]
-    
     
     return consts, bounds
 
@@ -226,6 +244,10 @@ def rps(u):
         elif 0 < k:
             
             dr          =   u.dr_mat[k - 1, l]
+            if K**2 - rps[k - 1, l]**2*u.dudrpol[k - 1, l][1]**2   \
+                        - u.dudrpol[k - 1, l][2]**2 < 0:
+                print 'ripsit kosahti'
+                raise ValueError 
             drp         =   np.sqrt(K**2 - rps[k - 1, l]**2*u.dudrpol[k - 1, l][1]**2   \
                                                           - u.dudrpol[k - 1, l][2]**2)*dr
             rps[k, l]   =   rps[k - 1, l] + drp  
