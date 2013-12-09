@@ -146,6 +146,7 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
         A_quess =   0.
     
     A_max       =   min(A_max, 5)
+    A_quess     =   min(A_max, A_quess)
     
     if x != 0:
         middle          =   -hangle**2/(2*x) - rmin - x/2
@@ -156,9 +157,9 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
         if n_w == 0:
             consts      =   [[x, A_quess, middle, width, n_w]]
         else:   
-            consts      =   [[x, A_quess*2, middle, width, n_w]] #, \
-            #                [x, A_quess,   middle, width, n_w], \
-            #                [x, A_quess/2,     middle, width, n_w], \
+            consts      =   [[x, A_quess*2, middle, width, n_w], \
+                             [x, A_quess,   middle, width, n_w], \
+                             [x, A_quess/2, middle, width, n_w]] #, \
             #                [x, A_quess/20,   middle, width, n_w]]  
         
         bounds          =   [(x*4./3., 0.1), (0., A_max), \
@@ -170,11 +171,12 @@ def get_quess(opt, ext_surf, hangle, phiperiod, n_w):
     
     return consts, bounds
 
-def reduce_bounds(bounds):
+def reduce_bounds(consts, bounds):
     
+    consts[1] = consts[1]*9/10      
     bounds[1] = (bounds[1][0], bounds[1][1]*9/10)
     
-    return bounds
+    return consts, bounds
 
 def curve_Lphi(u, test = True):
     

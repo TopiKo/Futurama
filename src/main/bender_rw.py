@@ -237,16 +237,22 @@ def has_been_calculated(in_file, read_write = 'read'):
 
     params      =   parse_input(in_file)
     folder      =   parse_path(params, params[("moldy_opm")])
-
+    
+    
     if read_write == 'read':    
         try: 
             stat_file   =   open(folder + 'stat_file.txt', 'r')
-            return stat_file.readline() == 'ready'
+            return stat_file.readline() in ['ready', 'error']
         except IOError:
             return False
-    elif read_write == 'write':
+    elif read_write == 'write_ok':
         stat_file       =   open(folder + 'stat_file.txt', 'w')
         stat_file.write('ready')
+    elif read_write == 'write_not_ok':
+        if not exists(folder):
+            makedirs(folder) 
+        stat_file       =   open(folder + 'stat_file.txt', 'w')
+        stat_file.write('error')
 
 
 def write_params(ue, energies, r, E_b, E_s):

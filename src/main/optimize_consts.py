@@ -60,17 +60,42 @@ class optimize():
                 for consts in o_consts_set:
                     
                     print 'Amplitude, A = %.2f, bounds A = ' %consts[1] + str(bounds[1])
-                    self.ue.set_const(consts)
+                    
+                    consts_set          =   False
+                    n                   =   0
+                    while not consts_set:
+                        if n    == 30:
+                            consts[0]   =   0.
+                            consts[1]   =   0.
+                        elif n  == 31:
+                            raise ValueError
+                        
+                        try:
+                            self.ue.set_const(consts)
+                            consts_set  =   True
+                        except ValueError:
+                            n          +=   1
+                            consts      =   reduce_bounds(consts, bounds)[0]
+                        
                     
                     converged           =   False
+                    n                   =   0
                     while not converged:
+                        if n    == 30:
+                            consts[0]   =   0.
+                            consts[1]   =   0.
+                        elif n  == 31:
+                            raise ValueError
+                        
                         try:
                             ol_consts, E=   fmin_l_bfgs_b(energy, consts[:-1], \
                                                           bounds = bounds)[:2]
                             
                             converged   =   True
                         except ValueError:
-                            bounds      =   reduce_bounds(bounds)
+                            #print 'red bounds'
+                            n          +=   1
+                            bounds      =   reduce_bounds(consts, bounds)[1]
                 
                     if E < E_min:
                         E_min           =   E

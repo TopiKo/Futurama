@@ -226,7 +226,7 @@ def plot_relations(rad_rels, height_rels, amplitudes, n_waves, folder):
         
         ax.scatter(rad_rels[ia], height_rels[ia], c= color, s=s)   
     
-    ax.set_xlabel('rmin/rmax')
+    ax.set_xlabel('rmax/rmin')
     ax.set_ylabel('height/rmax')
     
     ax.set_title('Amplitude/rmax = size of the ball, \n num of waves = color, blue =0, green = 1, red = 2')

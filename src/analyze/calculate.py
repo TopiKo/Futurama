@@ -80,10 +80,15 @@ def study_consts_proximity(in_file, acc = 3):
     delx        =   abs(params[("consts")][0]) / 10.
     delA        =   abs(params[("consts")][1]) / 2.
     x, A        =   params[("consts")][:2]
-    
+
+    if delA     ==   0.:
+        Amin    =   0
+        Amax    =   params[("height")]/70.
+    else:
+        Amin, Amax =   A - 2*delA, A + delA
     
     x_set       =   np.linspace(x - delx, x + delx, acc)        
-    A_set       =   np.linspace(A - delA, A + delA, acc)  
+    A_set       =   np.linspace(Amin, Amax, acc)  
     curve_start =   params[("consts")][2]
     mid         =   params[("consts")][3]
     n_wave      =   params[("consts")][4]
